@@ -1,19 +1,11 @@
 from fastapi import FastAPI
-
+from core.agent import app
 import uvicorn
-app = FastAPI()
+
 
 def main():
-    print("Hello from agenticblogger!")
-
-
-@app.get("/health")
-def health_check():
-    health = {
-        "status" : "running",
-        "type" : "python"
-    }
-    return health
+  out=  app.invoke({"topic" : "The future of AI in healthcare", "sections" : []})
+  print(out)
 
 if __name__ == "__main__":
-    uvicorn.run(app)
+  main()
