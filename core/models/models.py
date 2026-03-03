@@ -1,5 +1,5 @@
 
-from typing import TypedDict, List, Annotated, Literal
+from typing import TypedDict, List, Annotated, Literal, Optional
 import operator
 from pydantic import BaseModel, Field
 
@@ -28,14 +28,49 @@ class Tasks(BaseModel):
         ...,
         description="Use 'common_mistakes' exactly once in the plan.",
     )
+    tags: List[str] = Field(default_factory=list)
+    requires_research: bool
+    requires_citations: bool
+    requires_code:bool
 
 class Plan(BaseModel):
     blog_title: str =Field(description="The title of the blog post")
     tasks:List[Tasks]
+    audience:str
+    tone:str
+    blog_kind: Literal["explainer","tutorial", "news_roundup", "comparison", "system_design"]
+    constraints: Optional[str] = Field(default_factory=list)
+
+class EvidenceItem(BaseModel):
+    title: str
+    url:str
+    published_date:Optional[str]
+    snippet: Optional[str] = None
+    source: Optional[str] = None
+
+
+class RouterDecision(BaseModel):
+    needs_research: bool
+    mode: Literal["closed_book", "hybrid", "open_book"]
+    queries: List[str] = Field(default_factory=list)
+
 
 class State(TypedDict):
     topic: str
-    plan: Plan
-    # reducer: results from workers get concatenated automatically
-    sections: Annotated[List[str], operator.add]
+    # routing / research
+    mode: str
+    needs_research: bool
+    queries: List[str] 
+    evidence: List[EvidenceItem] 
+    plan: Optional[Plan]
+    # workers working.
+    sections: Annotated[List[tuple[int, str]], operator.add]  # (task_id, section_md)
     final: str
+
+
+
+# Multiple evidence cause worker will have 5-7 research topics, so each worker gives evidence and that evidence will be summed to list of evidence items for the final blog post
+
+class EvidencePack(BaseModel):
+    evidence : List[EvidenceItem] = Field(default_factory=list)
+

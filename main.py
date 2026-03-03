@@ -3,9 +3,18 @@ from core.agent import app
 import uvicorn
 
 
-def main():
-  out=  app.invoke({"topic" : "Write a blog on Self Attention", "sections" : []})
+def main(topic:str):
+  out=  app.invoke({
+            "topic": topic,
+            "mode": "",
+            "needs_research": False,
+            "queries": [],
+            "evidence": [],
+            "plan": None,
+            "sections": [],
+            "final": "",
+        })
   print(out)
 
 if __name__ == "__main__":
-  main()
+  main(topic="Fundings in AI startups from 2024-2026")
