@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+
 from core.agent import app
 import uvicorn
 
@@ -17,4 +17,4 @@ def main(topic:str):
   print(out)
 
 if __name__ == "__main__":
-  main(topic="Fundings in AI startups from 2024-2026")
+  main(topic="Transformers in NLP and its recent trends in the Startup ecosystem")
