@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.13'",
@@ -16,8 +16,10 @@ dependencies = [
     { name = "google-genai" },
     { name = "langchain" },
     { name = "langchain-community" },
+    { name = "langchain-core" },
     { name = "langchain-openai" },
     { name = "langgraph" },
+    { name = "openai" },
     { name = "python-dotenv" },
     { name = "tavily-python" },
     { name = "uvicorn" },
@@ -29,9 +31,11 @@ requires-dist = [
     { name = "google", specifier = ">=3.0.0" },
     { name = "google-genai", specifier = ">=1.65.0" },
     { name = "langchain", specifier = "==1.2.9" },
-    { name = "langchain-community", specifier = ">=0.4.1" },
-    { name = "langchain-openai", specifier = ">=1.1.10" },
+    { name = "langchain-community", specifier = "==0.4.1" },
+    { name = "langchain-core", specifier = "==1.2.16" },
+    { name = "langchain-openai", specifier = "==1.1.10" },
     { name = "langgraph", specifier = "==1.0.8" },
+    { name = "openai", specifier = "==2.24.0" },
     { name = "python-dotenv", specifier = ">=1.2.1" },
     { name = "tavily-python", specifier = ">=0.7.22" },
     { name = "uvicorn", specifier = "==0.40.0" },

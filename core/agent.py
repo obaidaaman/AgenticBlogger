@@ -6,7 +6,9 @@ from .nodes.worker import worker_node
 from .nodes.router_node import router_node, route_next
 from .nodes.research_node import research_node
 from .nodes.generate_img import merge_content, decide_images, generate_and_place_images
+from langgraph.checkpoint.memory import InMemorySaver
 
+checkpointer= InMemorySaver()
 # subgraph for image generation -> REDUCER
 reducer_graph = StateGraph(State)
 reducer_graph.add_node("merge_content", merge_content)
@@ -35,5 +37,5 @@ g.add_conditional_edges("orchestrator", fanout, ["worker"])
 g.add_edge("worker", "reducer")
 g.add_edge("reducer", END)
 
-app = g.compile()
+app = g.compile(checkpointer=checkpointer)
 
