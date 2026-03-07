@@ -4,7 +4,7 @@ from  core.models.models import Tasks, Plan,EvidenceItem
 
 from utils.const import WORKER_SYSTEM
 from langchain_core.messages import SystemMessage, HumanMessage
-def worker_node(payload: dict) -> dict:
+async def worker_node(payload: dict) -> dict:
     
     task = Tasks(**payload["task"])
     plan = Plan(**payload["plan"])
@@ -21,7 +21,7 @@ def worker_node(payload: dict) -> dict:
             for e in evidence[:20]
         )
 
-    section_md = llm.invoke(
+    section_md = await llm.ainvoke(
         [
             SystemMessage(content=WORKER_SYSTEM),
             HumanMessage(

@@ -3,6 +3,7 @@ from core.models.models import State
 from .nodes.orchestrator import orchestrator
 from .nodes.fanout import fanout
 from .nodes.worker import worker_node
+from .nodes.human_approval import human_approval_node
 from .nodes.router_node import router_node, route_next
 from .nodes.research_node import research_node
 from .nodes.generate_img import merge_content, decide_images, generate_and_place_images
@@ -28,12 +29,16 @@ g.add_node("research", research_node)
 g.add_node("orchestrator", orchestrator)
 g.add_node("worker", worker_node)
 g.add_node("reducer", reducer_subgraph)
+g.add_node("approval", human_approval_node)
 
 g.add_edge(START, "router")
 g.add_conditional_edges("router", route_next, {"research": "research", "orchestrator": "orchestrator"})
 g.add_edge("research", "orchestrator")
-
-g.add_conditional_edges("orchestrator", fanout, ["worker"])
+g.add_edge("orchestrator","approval")
+g.add_conditional_edges("approval", fanout, {
+    "worker" : "worker",
+    "orchestrator" : "orchestrator"
+})
 g.add_edge("worker", "reducer")
 g.add_edge("reducer", END)
 
