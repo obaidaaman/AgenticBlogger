@@ -1,5 +1,6 @@
 from ..models.models import State, RouterDecision
 from utils.llm_config import llm
+from core.nodes.fanout import fanout
 from utils.const import ROUTER_SYSTEM
 from langchain_core.messages import SystemMessage, HumanMessage
 async def router_node(state: State) ->dict:
@@ -26,8 +27,10 @@ def route_next(state: State) -> str:
     
 
 
-def route_after_approval(state:State):
-    if state["status"] == "approved":
-        return "fanout"
+def route_after_review(state:State):
+    feedback = state.get("status")
+
+    if feedback == "approve":
+        return fanout(state)
     else:
         return "orchestrator"

@@ -1,9 +1,6 @@
 from core.models.models import State
-from langgraph.types import interrupt
-def human_approval_node(state : State):
-    user_decision = interrupt({
-        "message" : "Please review the draft",
-        "plan" : state["plan"]
-    })
-    return {"status": "approved" if user_decision.get("action") == "approve" else "rejected"}
-
+async def human_review_node(state: State):
+    """Step 2: A dummy node. We will pause BEFORE this node runs."""
+    # This node doesn't actually do anything. It's just a placeholder 
+    # so we can pause the graph and evaluate the routing logic afterward.
+    pass
