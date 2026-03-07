@@ -16,12 +16,12 @@ async def merge_content(state: State) -> dict:
 
 async def decide_images(state: State) -> dict:
     
-    planner = await llm.with_structured_output(GlobalImagePlan)
+    planner = llm.with_structured_output(GlobalImagePlan)
     merged_md = state["merged_md"]
     plan = state["plan"]
     assert plan is not None
 
-    image_plan = planner.ainvoke(
+    image_plan =  await planner.ainvoke(
         [
             SystemMessage(content=DECIDE_IMAGES_SYSTEM),
             HumanMessage(
@@ -56,7 +56,7 @@ async def _gemini_generate_image_bytes(prompt: str) -> bytes:
 
     client = genai.Client(api_key=api_key)
 
-    resp = client.models.generate_content(
+    resp = await client.aio.models.generate_content(
         model="gemini-2.5-flash-image",
         contents=prompt,
         config=types.GenerateContentConfig(
@@ -114,7 +114,7 @@ async def generate_and_place_images(state: State) -> dict:
         #
         if not out_path.exists():
             try:
-                img_bytes = _gemini_generate_image_bytes(spec["prompt"])
+                img_bytes = await _gemini_generate_image_bytes(spec["prompt"])
                 out_path.write_bytes(img_bytes)
             except Exception as e:
                 

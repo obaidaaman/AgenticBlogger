@@ -21,7 +21,7 @@ async def worker_node(payload: dict) -> dict:
             for e in evidence[:20]
         )
 
-    section_md = await llm.ainvoke(
+    response = await llm.ainvoke(
         [
             SystemMessage(content=WORKER_SYSTEM),
             HumanMessage(
@@ -45,6 +45,7 @@ async def worker_node(payload: dict) -> dict:
                 )
             ),
         ]
-    ).content.strip()
+    )
+    section_md = response.content.strip()
 
     return {"sections": [(task.id, section_md)]}

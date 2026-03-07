@@ -20,94 +20,81 @@ def response_controller(topic:str, config : dict):
     return response
 
 
-
-from langgraph.types import Command
-
 async def handle_agent_websocket(websocket : WebSocket, thread_id: str):
 
     config = {"configurable": {"thread_id": thread_id}}
-
+    
     try:
-        data = await websocket.receive_json()
-
-        topic = data.get("topic")
-        action = data.get("action")
-        if not action:
-            graph_input = initial_state(topic)
-        else:
-            graph_input = Command(resume=action)
         while True:
+          
+            data = await websocket.receive_json()
+            action = data.get("action")
+            
+            if action == "start":
+                state = initial_state(topic=data.get("topic"))
+                await app.ainvoke(state, config=config)
                 
-            async for event in app.astream_events(
-                graph_input,
-                config=config,
-                version="v1"
-            ):
-
-                event_type = event["event"]
-
-             
-                if event_type == "on_node_start":
-                    await websocket.send_json({
-                        "type": "node_start",
-                        "node": event["name"]
-                    })
-
-                elif event_type == "on_node_end":
-                    await websocket.send_json({
-                        "type": "node_end",
-                        "node": event["name"]
-                    })
-
-           
-                elif event_type == "on_llm_stream":
-                    await websocket.send_json({
-                        "type": "token",
-                        "content": event["data"]["chunk"]
-                    })
-
                 
-                elif "__interrupt__" in event.get("data", {}):
-                    await websocket.send_json({
-                        "type": "interrupt",
-                        "data": event["data"]["__interrupt__"]
-                    })
-                    action = await websocket.receive_json()
-                    graph_input = Command(resume=action)
-                    break
+                current_state = await app.aget_state(config)
+                plan_pydantic = current_state.values.get("plan")
+                
+            
+                await websocket.send_json({
+                    "status": "plan_ready",
+                    "plan": plan_pydantic.model_dump() if plan_pydantic else None
+                })
+                # Approve
+            elif action == "approve":
+              
+                await app.aupdate_state(config, {"status": "approve"})
+          
+                await app.ainvoke(None, config=config)
+                
+                # Fanout then worker trigger             
+                final_state = await app.aget_state(config)
+                
+                # 4. Send final blog to frontend
+                await websocket.send_json({
+                    "status": "completed",
+                    "blog": final_state.values.get("final_blog")
+                })
 
-                # graph finished
-                elif event_type == "on_chain_end":
-                    result = event["data"]
-
-                    if hasattr(result, "content"):
-                        result = result.content
-
-                    await websocket.send_json({
-                        "type": "complete",
-                        "data": result
-                    })
-
-                    return
+       # Decline
+            elif action == "decline":
+                
+                await app.aupdate_state(config, {"status": "decline"})
+                
+                # Orchestrator Node back to there.
+                await app.ainvoke(None, config=config)
+                
+               
+                new_state = await app.aget_state(config)
+                new_plan = new_state.values.get("plan")
+                
+                # 4. Send the NEW plan to the frontend
+                await websocket.send_json({
+                    "status": "plan_ready",
+                    "plan": new_plan.model_dump() if new_plan else None
+                })
+                
     except WebSocketDisconnect:
-        print("Client Disconnected")
+        print("Client disconnected.")
 
 
 def initial_state(topic: str):
     graph = {
-        "topic" : topic,
-          "mode": "",
-    "needs_research": False,
-    "queries": [],
-    "evidence": [],
-    "plan": "",
-    # workers working.
-    "sections": [], # (task_id, section_md)
-    "merged_md": "",
-    "md_with_placeholders": "",
-    "image_specs": [],
-    "final" :"",
-    "status" : ""
-
+        
+            "topic": topic,
+            "mode": "",
+            "needs_research": False,
+            "queries": [],
+            "evidence": [],
+            "plan": None,
+            "sections": [],
+            "merged_md": "",
+            "md_with_placeholders": "",
+            "image_specs": [],
+            "final": "",
+            "status" : "start"
     }
     return graph
