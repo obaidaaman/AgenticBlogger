@@ -16,6 +16,10 @@ The workflow includes **human-in-the-loop approval** before content generation, 
 
 The system follows an **agent orchestration pipeline** implemented with **LangGraph**.
 <img width="176" height="771" alt="image" src="https://github.com/user-attachments/assets/73e6ce84-f950-4864-a885-3c46a2af738e" />
+
+
+
+
 High-level flow:
 
 Topic → Router → Research (optional) → Planner → Human Review → Fanout Workers → Merge → Image Generation → Final Blog
