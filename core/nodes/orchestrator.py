@@ -2,11 +2,11 @@ from ..models.models import State, Plan
 from utils.llm_config import llm
 from langchain_core.messages import SystemMessage, HumanMessage
 from utils.const import ORCH_SYSTEM
-def orchestrator(state: State) ->dict:
+async def orchestrator(state: State) ->dict:
 
     mode = state['mode']
     evidence = state['evidence']
-    plan = llm.with_structured_output(Plan).invoke([
+    plan = await llm.with_structured_output(Plan).ainvoke([
         SystemMessage(content=(
                               ORCH_SYSTEM )
                                ),

@@ -2,9 +2,9 @@ from ..models.models import State, RouterDecision
 from utils.llm_config import llm
 from utils.const import ROUTER_SYSTEM
 from langchain_core.messages import SystemMessage, HumanMessage
-def router_node(state: State) ->dict:
+async def router_node(state: State) ->dict:
     topic = state['topic']
-    decider = llm.with_structured_output(RouterDecision).invoke([
+    decider = await llm.with_structured_output(RouterDecision).ainvoke([
         SystemMessage(content=ROUTER_SYSTEM),
         HumanMessage(content=f"Topic: {topic}"),
     ])
@@ -21,5 +21,13 @@ def route_next(state: State) -> str:
     if state['needs_research']:
         return "research"
     
+    else:
+        return "orchestrator"
+    
+
+
+def route_after_approval(state:State):
+    if state["status"] == "approved":
+        return "fanout"
     else:
         return "orchestrator"

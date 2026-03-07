@@ -10,7 +10,7 @@ load_dotenv()
 tool = TavilySearchResults(max_results=6,api_key = os.getenv("TAVILY_API_KEY")) 
 
 
-def _tavily_search(query: str, max_results: int = 5) -> List[dict]:
+async def _tavily_search(query: str, max_results: int = 5) -> List[dict]:
     
 
     results = tool.invoke({"query": query})
@@ -30,19 +30,19 @@ def _tavily_search(query: str, max_results: int = 5) -> List[dict]:
         # [{"title":..., "url":..., "snippet":..., "published_at":..., "source":...},{"title":..., "url":..., "snippet":..., "published_at":..., "source":...},...]
     return normalized
 
-def research_node(state: State) -> dict:
+async def research_node(state: State) -> dict:
 
     queries = state['queries']
 
     raw_results : List[dict] = []
 
     for q in queries:
-        raw_results.extend(_tavily_search(q,max_results=6))
+        raw_results.extend( await _tavily_search(q,max_results=6))
 
     if not raw_results:
         return {"evidence": []}
     
-    pack = llm.with_structured_output(EvidencePack).invoke([
+    pack =  await llm.with_structured_output(EvidencePack).ainvoke([
         SystemMessage(content=RESEARCH_SYSTEM),
         HumanMessage(content=f"Raw results: \n{raw_results}")
 

@@ -69,6 +69,7 @@ class State(TypedDict):
     md_with_placeholders: str
     image_specs: List[dict]
     final :str
+    status : str
 
 
 
