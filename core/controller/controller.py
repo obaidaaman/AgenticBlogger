@@ -1,23 +1,7 @@
 from core.agent import app
 from fastapi import WebSocket, WebSocketDisconnect
-from core.models.response_model import ResponseModel
-from core.agent import app
-from langgraph.types import Command
 
-def response_controller(topic:str, config : dict):
 
-    output = app.invoke({
-        "topic" : topic,
-        "mode":"",
-        "needs_research":False,
-        "queries":[],
-        "evidence":[],
-        "plan": None,
-        "sections": [],
-        "final": "",
-    }, config=config)
-    response = ResponseModel(topic=topic, final= output.get("final", ""))
-    return response
 
 
 async def handle_agent_websocket(websocket : WebSocket, thread_id: str):
@@ -29,6 +13,7 @@ async def handle_agent_websocket(websocket : WebSocket, thread_id: str):
           
             data = await websocket.receive_json()
             action = data.get("action")
+            feedback = data.get("feedback", "")
             
             if action == "start":
                 state = initial_state(topic=data.get("topic"))
@@ -45,10 +30,40 @@ async def handle_agent_websocket(websocket : WebSocket, thread_id: str):
                 })
                 # Approve
             elif action == "approve":
-              
                 await app.aupdate_state(config, {"status": "approve"})
+                async for event in app.astream_events(None, config=config):
+
+                    if event["event"] == "on_chain_end" and event["name"] == "worker":
+
+                       
+                            output = event.get("data", {}).get("output", {})
+                            if isinstance(output,dict):
+                                sections = output.get("sections")
+
+                                if sections:
+                                    task_id = sections[0][0]
+
+                                    await websocket.send_json({
+                                "status": "section_complete",
+                                "task_id": task_id
+                                })
+                            
+                            elif isinstance(output, list):
+                                for item in output:
+                                    sections = item.get("sections")
+                                    if sections:
+                                        task_id = sections[0][0]
+
+                                        await websocket.send_json({
+                            "status": "section_complete",
+                            "task_id": task_id
+                        })
+
+                            
+              
+                 
           
-                await app.ainvoke(None, config=config)
+                # await app.ainvoke(None, config=config)
                 
                 # Fanout then worker trigger             
                 final_state = await app.aget_state(config)
@@ -56,13 +71,14 @@ async def handle_agent_websocket(websocket : WebSocket, thread_id: str):
                 # 4. Send final blog to frontend
                 await websocket.send_json({
                     "status": "completed",
-                    "blog": final_state.values.get("final_blog")
+                    "blog": final_state.values.get("final" \
+                    "")
                 })
 
        # Decline
             elif action == "decline":
                 
-                await app.aupdate_state(config, {"status": "decline"})
+                await app.aupdate_state(config, {"status": "decline", "feedback" : feedback})
                 
                 # Orchestrator Node back to there.
                 await app.ainvoke(None, config=config)
@@ -77,8 +93,12 @@ async def handle_agent_websocket(websocket : WebSocket, thread_id: str):
                     "plan": new_plan.model_dump() if new_plan else None
                 })
                 
-    except WebSocketDisconnect:
+    except WebSocketDisconnect as e:
         print("Client disconnected.")
+        print(str(e))
+    except Exception as e:
+        print(str(e))
+    
 
 
 def initial_state(topic: str):

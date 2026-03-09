@@ -9,6 +9,7 @@ from .nodes.research_node import research_node
 from .nodes.generate_img import merge_content, decide_images, generate_and_place_images
 from langgraph.checkpoint.memory import InMemorySaver
 
+
 checkpointer= InMemorySaver()
 # subgraph for image generation -> REDUCER
 reducer_graph = StateGraph(State)

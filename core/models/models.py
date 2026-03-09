@@ -70,7 +70,8 @@ class State(TypedDict):
     image_specs: List[dict]
     final :str
     status : str
-
+    feedback: Optional[str]
+    final_blog_url: str
 
 
 # Multiple evidence cause worker will have 5-7 research topics, so each worker gives evidence and that evidence will be summed to list of evidence items for the final blog post
