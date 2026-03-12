@@ -53,10 +53,16 @@ async def handle_agent_websocket(websocket : WebSocket, thread_id: str):
                 # Fanout then worker trigger             
                 final_state = await app.aget_state(config)
                 
-                # 4. Send final blog to frontend
+               
                 await websocket.send_json({
                     "status": "completed",
+<<<<<<< Updated upstream
                     "blog": final_state.values.get("final_blog")
+=======
+                    "blog": final_state.values.get("final" \
+                    ""),
+                    "notion_url" : final_state.values.get("notion_url", "")
+>>>>>>> Stashed changes
                 })
 
        # Decline
@@ -95,6 +101,7 @@ def initial_state(topic: str):
             "md_with_placeholders": "",
             "image_specs": [],
             "final": "",
-            "status" : "start"
+            "status" : "start",
+            "notion_url" :""
     }
     return graph
