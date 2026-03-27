@@ -3,7 +3,10 @@ from fastapi import WebSocket, WebSocketDisconnect
 from core.models.response_model import ResponseModel
 from core.agent import app
 from langgraph.types import Command
-
+from typing import Optional
+from datetime import timedelta, datetime
+import jwt
+import os
 def response_controller(topic:str, config : dict):
 
     output = app.invoke({
@@ -19,6 +22,73 @@ def response_controller(topic:str, config : dict):
     response = ResponseModel(topic=topic, final= output.get("final", ""))
     return response
 
+def create_access_token(
+    data: dict,
+    expires_delta: Optional[timedelta] = None
+) -> str:
+    """Create a JWT access token."""
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(
+            minutes=30
+        )
+    to_encode.update({"exp": expire, "type": "access"})
+    encoded_jwt = jwt.encode(
+        to_encode,
+        os.getenv("JWT_SECRET_KEY"),
+        algorithm=os.getenv("JWT_ALGORITHM")
+    )
+    return encoded_jwt
+
+
+def create_refresh_token(
+    data: dict,
+    expires_delta: Optional[timedelta] = None
+) -> str:
+    """Create a JWT refresh token."""
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(
+            days=30
+        )
+    to_encode.update({"exp": expire, "type": "refresh"})
+    encoded_jwt = jwt.encode(
+        to_encode,
+        os.getenv("JWT_SECRET_KEY"),
+            algorithms=[os.getenv("JWT_ALGORITHM")]
+    )
+    return encoded_jwt
+
+
+def decode_token(token: str) -> Optional[dict]:
+    """Decode and validate a JWT token."""
+    try:
+        payload = jwt.decode(
+            token,
+            os.getenv("JWT_SECRET_KEY"),
+            algorithms=[os.getenv("JWT_ALGORITHM")]
+        )
+        return payload
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
+
+
+def verify_token(token: str, token_type: str = "access") -> Optional[dict]:
+    """Verify token and return payload if valid."""
+    payload = decode_token(token)
+    if payload is None:
+        return None
+
+    if payload.get("type") != token_type:
+        return None
+
+    return payload
 
 async def handle_agent_websocket(websocket : WebSocket, thread_id: str):
 
@@ -56,16 +126,13 @@ async def handle_agent_websocket(websocket : WebSocket, thread_id: str):
                
                 await websocket.send_json({
                     "status": "completed",
-<<<<<<< Updated upstream
-                    "blog": final_state.values.get("final_blog")
-=======
-                    "blog": final_state.values.get("final" \
+                    "blog": final_state.values.get("final_blog") or final_state.values.get("final" \
                     ""),
+                   
                     "notion_url" : final_state.values.get("notion_url", "")
->>>>>>> Stashed changes
-                })
+                        })
 
-       # Decline
+      
             elif action == "decline":
                 
                 await app.aupdate_state(config, {"status": "decline"})
