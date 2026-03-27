@@ -2,29 +2,13 @@
 notion_publisher.py — Convert the blog's final Markdown into Notion blocks
 and publish it as a new Notion page via the REST API.
 
-Notion API version: 2025-09-03
 
-Required env vars:
-    NOTION_API_KEY       — your integration's Internal Integration Secret
-    NOTION_PARENT_PAGE_ID — ID of the Notion page the blog will be created under
-                            (share that page with your integration first)
-
-Usage:
-    from notion_publisher import publish_to_notion
-
-    page_url = await publish_to_notion(
-        title="How Transformers Work",
-        markdown=md_string,
-    )
-    # returns the Notion page URL, e.g.
-    # https://www.notion.so/How-Transformers-Work-<page_id>
 """
 
 from __future__ import annotations
 
 import os
 import re
-import html as html_module
 from typing import Any
 from dotenv import load_dotenv
 
