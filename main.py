@@ -21,12 +21,12 @@ async def lifespan(app: FastAPI):
     app.state.mongodb_client= AsyncMongoClient(os.getenv("MONGODB_URI"))
 
     app.state.database = app.state.mongodb_client.get_database("users")
-    await app.database["users"].create_index("username", unique=True)
+    await app.state.database["users"].create_index("username", unique=True)
     app.state.logger = logger
     
 
     yield
-    app.mongodb_client.close()
+    app.state.mongodb_client.close()
     
 
 
