@@ -21,13 +21,13 @@ async def invoke_router(ws : WebSocket, thread_id : str, current_user = Depends(
 
 @app_router.post("/login",status_code=status.HTTP_200_OK)
 async def loginUser(request: Request, body: LoginModel):
-    return auth_controller.login(body)
+    return await auth_controller.login(request,body)
     
     
 @app_router.post("/signup",status_code=status.HTTP_201_CREATED)
 async def signupUser(request: Request, body: SignUpModel ):
 
-    return auth_controller.signup(body)
+    return await auth_controller.signup(request,body)
 
 @app_router.post("/is_auth",status_code=status.HTTP_200_OK)
 async def is_authenticated(request : Request):
