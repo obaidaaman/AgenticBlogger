@@ -8,4 +8,6 @@ langchain-openai==1.1.10
 langchain-core==1.2.16
 langchain-community==0.4.1
 tavily-python>=0.7.22
-pyjwt
+pyjwt==2.12.1
+pymongo
+pwdlib==0.3.0

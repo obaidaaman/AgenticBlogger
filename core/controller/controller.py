@@ -1,8 +1,6 @@
 from core.agent import app
 from fastapi import WebSocket, WebSocketDisconnect
 from core.models.response_model import ResponseModel
-from core.agent import app
-from langgraph.types import Command
 from typing import Optional
 from datetime import timedelta, datetime
 import jwt
@@ -11,7 +9,7 @@ def response_controller(topic:str, config : dict):
 
     output = app.invoke({
         "topic" : topic,
-        "mode":"",
+        "mode":"", 
         "needs_research":False,
         "queries":[],
         "evidence":[],

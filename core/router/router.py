@@ -1,4 +1,4 @@
-from fastapi import APIRouter, WebSocket, Request, status
+from fastapi import APIRouter, WebSocket, Request, status, Depends
 from core.controller import controller
 from core.models.models import SignUpModel, LoginModel
 from core.controller import auth_controller
@@ -14,7 +14,7 @@ app_router = APIRouter(prefix="/api/v1", tags=["Blog"])
 
 
 @app_router.websocket("/ws/{thread_id}")
-async def invoke_router(ws : WebSocket, thread_id : str):
+async def invoke_router(ws : WebSocket, thread_id : str, current_user = Depends(auth_controller.is_authenticated)):
     await ws.accept()
     await controller.handle_agent_websocket(websocket=ws,thread_id=thread_id)
 
