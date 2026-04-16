@@ -17,14 +17,6 @@ The workflow includes **human-in-the-loop approval** before content generation, 
 The system follows an **agent orchestration pipeline** implemented with **LangGraph**.
 
 
-**Reducer Subgraph** <img width="252" height="432" alt="image" src="https://github.com/user-attachments/assets/c65ad9b5-eecd-4616-aed0-77d8b0270813" />
-
-
-
-
-**Main Graph** <img width="176" height="771" alt="image" src="https://github.com/user-attachments/assets/73e6ce84-f950-4864-a885-3c46a2af738e" />
-
-
 
 
 
