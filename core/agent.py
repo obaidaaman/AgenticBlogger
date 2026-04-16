@@ -1,15 +1,23 @@
 from langgraph.graph import StateGraph, START, END
 from core.models.models import State
 from .nodes.orchestrator import orchestrator
-from .nodes.fanout import fanout
 from .nodes.worker import worker_node
 from .nodes.human_approval import human_review_node
 from .nodes.router_node import router_node, route_next, route_after_review
 from .nodes.research_node import research_node
 from .nodes.generate_img import merge_content, decide_images, generate_and_place_images
-from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.checkpoint.mongodb.aio import AsyncMongoDBSaver
+from motor.motor_asyncio import AsyncIOMotorClient
+import os
 
-checkpointer= InMemorySaver()
+
+client = AsyncIOMotorClient(os.getenv("MONGODB_URI"))
+checkpointer = AsyncMongoDBSaver(
+    uri=os.getenv("MONGODB_URI"),
+    db_name="langgraph_db",
+    collection_name="checkpoints",
+    client= client
+)
 # subgraph for image generation -> REDUCER
 reducer_graph = StateGraph(State)
 reducer_graph.add_node("merge_content", merge_content)
