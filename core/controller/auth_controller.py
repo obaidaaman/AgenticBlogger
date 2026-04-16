@@ -1,7 +1,6 @@
 
 from pwdlib import PasswordHash
 from pymongo.errors import DuplicateKeyError
-
 from core.models.models import SignUpModel, LoginModel
 from datetime import timedelta, datetime, timezone
 import jwt

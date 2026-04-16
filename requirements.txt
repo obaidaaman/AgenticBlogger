@@ -9,5 +9,7 @@ langchain-core==1.2.16
 langchain-community==0.4.1
 tavily-python>=0.7.22
 pyjwt==2.12.1
-pymongo
+pymongo>=4.12,<4.16
 pwdlib==0.3.0
+langgraph-checkpoint-mongodb==0.1.4
+motor==3.7.1
