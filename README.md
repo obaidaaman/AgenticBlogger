@@ -27,6 +27,9 @@ The system follows an **agent orchestration pipeline** implemented with **LangGr
 
 
 
+
+<img width="1440" height="1186" alt="image" src="https://github.com/user-attachments/assets/0b3808af-a26a-4c39-b3a5-00e59e11fdd8" />
+
 High-level flow:
 
 Topic → Router → Research (optional) → Planner → Human Review → Fanout Workers → Merge → Image Generation → Final Blog
