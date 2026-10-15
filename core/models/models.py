@@ -74,6 +74,10 @@ class State(TypedDict):
     feedback: Optional[str]
     notion_url: str
 
+    # code execution and healing
+    code_errors: Optional[List[dict]]
+    code_healing_retries: Optional[int]
+
 
 
 # Multiple evidence cause worker will have 5-7 research topics, so each worker gives evidence and that evidence will be summed to list of evidence items for the final blog post

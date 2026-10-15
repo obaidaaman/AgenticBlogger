@@ -9,10 +9,14 @@ from utils.const import DECIDE_IMAGES_SYSTEM
 from core.nodes.notion_publisher import publish_to_notion
 from core.storage.storage import get_storage_backend, slugify
 async def merge_content(state: State) -> dict[str, Any]:
-
     plan = state["plan"]
 
-    ordered_sections = [md for _, md in sorted(state["sections"], key=lambda x: x[0])]
+    # pick latest version per task_id (in case any section was healed)
+    latest_sections = {}
+    for task_id, md in state.get("sections", []):
+        latest_sections[task_id] = md
+
+    ordered_sections = [latest_sections[tid] for tid in sorted(latest_sections.keys())]
     body = "\n\n".join(ordered_sections).strip()
     merged_md = f"# {plan.blog_title}\n\n{body}\n"
     return {"merged_md": merged_md}
@@ -101,12 +105,19 @@ async def generate_and_place_images(state: State) -> dict[str, Any]:
         filename=md_filename,
         content=md,
     )
-    print("Publishing to Notion...")
-    notion_url = await publish_to_notion(
-        title=plan.blog_title,
-        markdown=md
-    )
-    print(f"Notion upload complete : {notion_url}")
+    notion_url = ""
+    if os.getenv("NOTION_API_KEY") and os.getenv("NOTION_PARENT_PAGE_ID"):
+        try:
+            print("Publishing to Notion...")
+            notion_url = await publish_to_notion(
+                title=plan.blog_title,
+                markdown=md
+            )
+            print(f"Notion upload complete: {notion_url}")
+        except Exception as e:
+            print(f"Warning: Notion publishing failed: {e}")
+    else:
+        print("Notice: NOTION_API_KEY or NOTION_PARENT_PAGE_ID not set, skipping Notion publishing.")
     return {
         "final": md,           
         "final_blog_url": blog_url,  
@@ -124,9 +135,9 @@ async def _gemini_generate_image_bytes(prompt: str) -> bytes:
     from google import genai
     from google.genai import types
 
-    api_key = os.environ.get("GOOGLE_API_KEY")
+    api_key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
     if not api_key:
-        raise RuntimeError("GOOGLE_API_KEY is not set.")
+        raise RuntimeError("Neither GOOGLE_API_KEY nor GEMINI_API_KEY is set.")
 
     client = genai.Client(api_key=api_key)
 
